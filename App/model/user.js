@@ -1,45 +1,60 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-
-  uid: { type: String, unique: true },
+  uid: {
+    type: String,
+    required: true,
+    unique: true,
+  },
 
   email: { type: String },
-  emailVerified: { type: Boolean, default: false },
 
-  phone: { type: String },
-  phoneVerified: { type: Boolean, default: false },
+  phone: { type: Number },
 
-  displayName: { type: String },
+  name: { type: String },
   username: { type: String },
   gender: { type: String },
+  dob: {type: Date},
 
-  dob: { type: String },
   avatarUrl: { type: String },
 
   role: {
     type: String,
     enum: ["user", "expert"],
-    default: "user"
+    default: "user",
   },
 
-  profileComplete: { type: Boolean, default: false },
+  expertStatus: {
+    type: String,
+    enum: ["none", "pending", "active", "rejected"],
+    default: "none",
+  },
 
-  // Reference → only if role = expert
+  profileCompleted: {
+    type: Boolean,
+    default: false,
+  },
+
+  termsAccepted: {
+    type: Boolean,
+    default: false,
+  },
+
   expertProfile: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ExpertProfile",
-    default: null
+    default: null,
   },
 
-  createdAt: { type: Date, default: Date.now },
-  lastLoginAt: { type: Date, default: Date.now },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 
-  termsAccepted: { type: Boolean, default: false },
-
-  appToken: { type: String },
-  platform: { type: String }
-
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);

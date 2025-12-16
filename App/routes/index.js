@@ -8,7 +8,11 @@ const expertController = require("../controller/expertController");
 
 //register 
 router.post("/register",verifytoken,registered.register)
+router.get("/getregister",registered.getregister);
+
+//login
 router.post("/login",verifytoken,login.logindata);
+router.get("/getlogin",verifytoken,login.getLogin);
 
 //craeteprofile
 router.post("/profile",userprofile.createprofile);

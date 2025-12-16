@@ -1,41 +1,10 @@
 const User = require("../model/user");
 const ExpertProfile = require("../model/expertProfile");
 
-exports.createprofile = async (req, res) => {
-//   try {
-//     const firebaseUser = req.user;
-//     const { displayName, username, gender, dob, avatarUrl, role } = req.body;
-
-//     // Check if user already exists
-//     const existingUser = await User.findOne({ uid: firebaseUser.uid });
-//     if (existingUser) {
-//       return res.status(400).json({ message: "User already exists" });
-//     }
-
-//     // Create new user with expertProfile reference if applicable
-//     const user = await User.create({
-//       uid: firebaseUser.uid,
-//       email: firebaseUser.email,
-//       emailVerified: firebaseUser.emailVerified,
-//       phone: firebaseUser.phone,
-//       phoneVerified: firebaseUser.phoneVerified,
-//       displayName,
-//       username,
-//       gender,
-//       dob,
-//       avatarUrl,
-//       role,
-//       expertProfile: expertProfileId,
-//     });
-
-//     res.status(201).json({
-//       message: "Profile created successfully",
-//       user,
-//     });
-//   } 
+exports.createprofile = async (req, res) => { 
     try {
     const decoded = req.user; 
-    const { displayName, username, gender, dob, avatarUrl, role } = req.body;
+    const { name, username, gender, dob, avatarUrl, role } = req.body;
 
     const existingUser = await User.findOne({ uid });
     if (existingUser) return res.status(400).json({ message: "User already exists" });
@@ -44,13 +13,12 @@ exports.createprofile = async (req, res) => {
       uid : decoded.uid,
       email : decoded.email,
       phone : decoded.phone,
-      displayName,
+      name,
       username,
       gender,
-      dob,
+      dob : dob ? new Date(dob) : null,
       avatarUrl,
-      role,
-      expertProfile: null
+      termsAccepted
     });
 
     res.status(201).json({
@@ -87,7 +55,7 @@ exports.deleteUser = async (req, res) => {
     const uid = decoded.uid;
 
     const deletedUser = await User.findOneAndDelete({ uid : uid});
-
+    
     if (!deletedUser) {
       return res.status(404).json({ message: "User not found" });
     }
