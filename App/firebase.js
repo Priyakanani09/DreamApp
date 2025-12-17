@@ -1,10 +1,6 @@
 require("dotenv").config();
 const admin = require("firebase-admin");
 
-if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-  throw new Error("FIREBASE_SERVICE_ACCOUNT missing");
-}
-
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 // 🔥 THIS LINE FIXES THE ERROR
