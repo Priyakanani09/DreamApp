@@ -1,13 +1,15 @@
-require("dotenv").config();
-const admin = require("firebase-admin");
+import admin from "firebase-admin";
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+  throw new Error("FIREBASE_SERVICE_ACCOUNT not found");
+}
 
-// 🔥 THIS LINE FIXES THE ERROR
-serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
+const serviceAccount = JSON.parse(
+  process.env.FIREBASE_SERVICE_ACCOUNT
+);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-module.exports = admin;
+export default admin;
