@@ -1,8 +1,15 @@
 const admin = require("firebase-admin");
+const fs = require("fs");
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+let serviceAccount;
 
-serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
+if (process.env.RENDER) {
+  // ✅ Render environment
+  serviceAccount = require("/etc/secrets/serviceAccount.json");
+} else {
+  // ✅ Local environment
+  serviceAccount = require("./serviceAccount.json");
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
