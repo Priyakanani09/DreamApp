@@ -6,7 +6,6 @@ module.exports = (app) => {
     app.post("/dreams",auth,async(req,res) => {
         const  { description, category } = req.body;
         const uid = req.user.uid;
-
         try{
             const snap = await db.collection("dreams")
             .where("userId", "==", uid)
@@ -19,7 +18,6 @@ module.exports = (app) => {
                 message: "User already has an active dream"
               });
             }
-
             const docRef = await db.collection("dreams").add({
               userId : uid,
               description,
@@ -49,7 +47,8 @@ module.exports = (app) => {
         .limit(1)
         .get();
 
-        if (snap.empty) {
+        if (snap.empty)
+        {
           return res.json({
             hasActiveDream: false
           });
@@ -67,7 +66,8 @@ module.exports = (app) => {
           expertId: data.expertId
         });
       }
-      catch (err) {
+      catch (err) 
+      {
         return res.status(500).json({ error: err.message });
       }
     });
