@@ -15,7 +15,7 @@ router.post("/login",verifytoken,login.logindata);
 router.get("/getlogin",verifytoken,login.getLogin);
 
 //craeteprofile
-router.post("/profile",userprofile.createprofile);
+router.post("/profile",verifytoken,userprofile.createprofile);
 router.get("/getprofile",userprofile.getUser);
 router.delete("/Deleteuser/:uid",userprofile.deleteUser);
 router.put("/Updateuser/:uid",userprofile.updateUser);
