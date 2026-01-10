@@ -17,10 +17,10 @@ router.get("/getlogin",verifytoken,login.getLogin);
 //craeteprofile
 router.post("/profile",verifytoken,userprofile.createprofile);
 router.get("/getprofile",userprofile.getUser);
-router.delete("/Deleteuser/:uid",userprofile.deleteUser);
-router.put("/Updateuser/:uid",userprofile.updateUser);
+router.delete("/Deleteuser/:uid",verifytoken,userprofile.deleteUser);
+router.put("/Updateuser/:uid",verifytoken,userprofile.updateUser);
 
 //expert data
-router.post("/expert", expertController.createExpertProfile);
+router.post("/expert", verifytoken,expertController.createExpertProfile);
 router.get("/getexpert", expertController.getExpertProfileByUser);
 module.exports = router;

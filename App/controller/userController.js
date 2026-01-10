@@ -10,6 +10,7 @@ exports.createprofile = async (req, res) => {
     if (existingUser) return res.status(400).json({ message: "User already exists" });
 
     const user = await User.create({
+      uid : decoded.uid,
       email : decoded.email,
       phone : decoded.phone,
       name,
