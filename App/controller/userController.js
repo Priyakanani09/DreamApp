@@ -6,8 +6,8 @@ exports.createprofile = async (req, res) => {
     const decoded = req.user; 
     const { name, username, gender, dob, avatarUrl, role, termsAccepted  } = req.body;
 
-    const existingUser = await User.findOne({uid: decoded.uid });
-    if (existingUser) return res.status(400).json({ message: "User already exists" });
+    // const existingUser = await User.findOne({uid: decoded.uid });
+    // if (existingUser) return res.status(400).json({ message: "User already exists" });
 
     const user = await User.create({
       uid : decoded.uid,
