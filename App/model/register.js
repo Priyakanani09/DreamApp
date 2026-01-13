@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const registerSchema = new mongoose.Schema({
-  uid: { type: String, required: true, unique: true },
+  uid: { type: String, required: true },
   email: {type : String, unique : true},
   emailVerified: Boolean,
   phone: String,
