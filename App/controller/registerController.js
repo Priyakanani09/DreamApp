@@ -10,7 +10,7 @@ exports.register = async (req, res) => {
     // }
 
     await User.create({
-      // uid: decoded.uid,
+      uid: decoded.uid,
       email: decoded.email,
       emailVerified: decoded.email_verified,
       phone: decoded.phone_number,
