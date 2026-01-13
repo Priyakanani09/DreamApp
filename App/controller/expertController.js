@@ -6,9 +6,9 @@ exports.createExpertProfile = async (req, res) => {
     const decoded = req.user;
     const { expertiseAreas, experienceYears, bio, paymentId } = req.body;
 
-    if (!paymentId) {
-      return res.status(400).json({ message: "Payment not verified" });
-    }
+    // if (!paymentId) {
+    //   return res.status(400).json({ message: "Payment not verified" });
+    // }
 
     const user = await User.findOne({ uid: decoded.uid });
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -25,7 +25,7 @@ exports.createExpertProfile = async (req, res) => {
       expertiseAreas,
       experienceYears,
       bio,
-      paymentId,
+      // paymentId,
     });
 
     user.expertStatus = "pending";

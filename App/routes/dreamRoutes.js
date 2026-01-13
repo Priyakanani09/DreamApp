@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-
 const admin = require("../firebase");
 const auth = require("../middlewares/verifyAuth");
 const db = admin.firestore();
