@@ -21,7 +21,7 @@ router.post("/dreams", auth, async (req, res) => {
         message: "User already has an active dream",
       });
     }
-
+    
     const docRef = await db.collection("dreams").add({
       userId: uid,
       description,
@@ -29,6 +29,7 @@ router.post("/dreams", auth, async (req, res) => {
       status: "pending",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       expertId: null,
+      aiAnalysis : null
     });
 
     return res.status(201).json({
