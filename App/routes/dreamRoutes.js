@@ -4,27 +4,18 @@ const admin = require("../firebase");
 const auth = require("../middlewares/verifyAuth");
 const db = admin.firestore();
 
-const ALL_STATUSES = [
-  "pending",
-  "requested",
-  "in-session",
-  "completed",
-];
+// const ALL_STATUSES = ["pending", "requested", "in-session", "completed","analyzing","analyzed"];
+const ACTIVE_STATUSES = ["pending", "requested", "in-session", "analyzing"];
 
 router.post("/dreams", auth, async (req, res) => {
-  const { description, category, status } = req.body;
+  const { description, category } = req.body;
   const uid = req.user.uid;
 
   try {
-    if (!ALL_STATUSES.includes(status)) {
-      return res.status(400).json({
-        message: "Invalid status value",
-      });
-    }
     const snap = await db
       .collection("dreams")
       .where("userId", "==", uid)
-      .where("status", "in", ALL_STATUSES)
+      .where("status", "in", ACTIVE_STATUSES)
       .limit(1)
       .get();
 
@@ -38,7 +29,7 @@ router.post("/dreams", auth, async (req, res) => {
       userId: uid,
       description,
       category,
-      status,
+      status: "pending",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       expertId: null,
       aiAnalysis: null,
@@ -60,7 +51,7 @@ router.get("/dreams/active", auth, async (req, res) => {
     const snap = await db
       .collection("dreams")
       .where("userId", "==", uid)
-      .where("status", "in", ALL_STATUSES)
+      .where("status", "in", ACTIVE_STATUSES)
       .limit(1)
       .get();
 
@@ -107,9 +98,10 @@ router.post("/dreams/user-request", auth, async (req, res) => {
         message: "Dream already requested or processed",
       });
     }
+
     await ref.update({
       status: "analyzing",
-      updatedAt: new Date(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     return res.json({
@@ -123,4 +115,69 @@ router.post("/dreams/user-request", auth, async (req, res) => {
   }
 });
 
+router.post("/dreams/run-ai", auth, async (req, res) => {
+  try {
+    const snap = await db
+      .collection("dreams")
+      .where("status", "==", "analyzing")
+      .limit(1)
+      .get();
+
+    if (snap.empty) {
+      return res.json({ message: "No dreams to analyzing" });
+    }
+
+    const doc = snap.docs[0];
+    const dream = doc.data();
+    const dreamText = dream.description;
+
+    const prompt = `
+      You are a dream analysis expert.
+
+      Analyze the dream and respond with:
+      Summary, Meaning, Emotion, Reflection.
+
+      Dream:
+      "${dreamText}"
+    `;
+
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/gpt2",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+        }),
+      },
+    );
+
+    const result = await response.json();
+    const generatedText = result[0]?.generated_text || "";
+
+    const aiAnalysis = {
+      summary: generatedText.slice(0, 200),
+      meaning: generatedText.slice(200, 400),
+      emotion: "Mixed emotions",
+      reflection: "Reflect on recent thoughts or stress",
+      analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await doc.ref.update({
+      status: "analyzed",
+      aiAnalysis,
+    });
+
+    return res.json({
+      success: true,
+      // dreamId: doc.id,
+    });
+
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
 module.exports = router;
