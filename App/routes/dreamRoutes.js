@@ -75,7 +75,7 @@ router.get("/dreams/active", auth, async (req, res) => {
   }
 });
 
-router.post("/dreams/user-request", auth, async (req, res) => {
+router.post("/dreams/run-ai", auth, async (req, res) => {
   const uid = req.user.uid;
   const { dreamId } = req.body;
 
@@ -89,46 +89,24 @@ router.post("/dreams/user-request", auth, async (req, res) => {
 
     const dream = snap.data();
 
+    // Ownership check
     if (dream.userId !== uid) {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
+    // Status check
     if (dream.status !== "pending") {
       return res.status(409).json({
         message: "Dream already requested or processed",
       });
     }
 
+    // Update → analyzing
     await ref.update({
       status: "analyzing",
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    return res.json({
-      success: true,
-      dreamId,
-      status: "analyzing",
-      description: dream.description,
-    });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/dreams/run-ai", auth, async (req, res) => {
-  try {
-    const snap = await db
-      .collection("dreams")
-      .where("status", "==", "analyzing")
-      .limit(1)
-      .get();
-
-    if (snap.empty) {
-      return res.json({ message: "No dreams to analyzing" });
-    }
-
-    const doc = snap.docs[0];
-    const dream = doc.data();
     const dreamText = dream.description;
 
     const prompt = `
@@ -138,15 +116,14 @@ router.post("/dreams/run-ai", auth, async (req, res) => {
       Summary, Meaning, Emotion, Reflection.
 
       - Use neutral, non-judgmental language
-      - Avoid absolute claims (use words like "may", "might", "could")
+      - Avoid absolute claims (may, might, could)
       - Do NOT give medical, psychological, spiritual, or future predictions
       - Do NOT instruct the user what to do
-      - Do NOT mention that you are an AI
       - Keep the tone supportive and grounded
-      - Assume the dream reflects inner thoughts, emotions, or experiences
-        Dream:
+
+      Dream:
       "${dreamText}"
-    `;
+      `;
 
     const response = await fetch(
       "https://api-inference.huggingface.co/models/gpt2",
@@ -156,9 +133,7 @@ router.post("/dreams/run-ai", auth, async (req, res) => {
           Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          inputs: prompt,
-        }),
+        body: JSON.stringify({ inputs: prompt }),
       },
     );
 
@@ -169,22 +144,22 @@ router.post("/dreams/run-ai", auth, async (req, res) => {
       summary: generatedText.slice(0, 200),
       possibleMeaning: generatedText.slice(200, 400),
       emotionalInsight: "The primary emotion reflected in the dream",
-      reflectionQuestion: "One thoughtful, open-ended question that encourages reflection on waking life",
+      reflectionQuestion:
+        "What part of your waking life might connect with this dream?",
       analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
-    await doc.ref.update({
+    await ref.update({
       status: "analyzed",
       aiAnalysis,
     });
 
     return res.json({
       success: true,
-      // dreamId: doc.id,
     });
-
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 });
+
 module.exports = router;
