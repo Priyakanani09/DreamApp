@@ -137,7 +137,14 @@ router.post("/dreams/run-ai", auth, async (req, res) => {
       Analyze the dream and respond with:
       Summary, Meaning, Emotion, Reflection.
 
-      Dream:
+      - Use neutral, non-judgmental language
+      - Avoid absolute claims (use words like "may", "might", "could")
+      - Do NOT give medical, psychological, spiritual, or future predictions
+      - Do NOT instruct the user what to do
+      - Do NOT mention that you are an AI
+      - Keep the tone supportive and grounded
+      - Assume the dream reflects inner thoughts, emotions, or experiences
+        Dream:
       "${dreamText}"
     `;
 
@@ -160,9 +167,9 @@ router.post("/dreams/run-ai", auth, async (req, res) => {
 
     const aiAnalysis = {
       summary: generatedText.slice(0, 200),
-      meaning: generatedText.slice(200, 400),
-      emotion: "Mixed emotions",
-      reflection: "Reflect on recent thoughts or stress",
+      possibleMeaning: generatedText.slice(200, 400),
+      emotionalInsight: "The primary emotion reflected in the dream",
+      reflectionQuestion: "One thoughtful, open-ended question that encourages reflection on waking life",
       analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
